@@ -1,0 +1,4 @@
+Django>=5.0,<6.2
+Pillow>=10.0,<13.0
+asgiref>=3.8
+sqlparse>=0.5

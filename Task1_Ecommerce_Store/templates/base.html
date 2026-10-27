@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NovaCart — Premium Lifestyle & Tech Store{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Announcement -->
+  <div class="top-announcement">
+    🚚 Free Express Delivery on orders above ₹1,000! &nbsp;|&nbsp; ⚡ CodeAlpha Special 15% OFF with code: <strong>CODEALPHA15</strong>
+  </div>
+
+  <!-- Main Navbar -->
+  <header class="site-navbar">
+    <div class="nav-container">
+      <a href="{% url 'product_list' %}" class="brand-logo">
+        <div class="brand-icon">🛍️</div>
+        <span>NovaCart</span>
+      </a>
+
+      <!-- Search Bar -->
+      <div class="search-form-wrap">
+        <form method="GET" action="{% url 'product_list' %}">
+          <span class="nav-search-icon">🔍</span>
+          <input type="text" name="q" value="{{ request.GET.q|default:'' }}" class="nav-search-input" placeholder="Search 1,000+ products, sneakers, keyboards, tech...">
+        </form>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'order_history' %}" class="nav-btn">
+            <span>📦</span>
+            <span>My Orders</span>
+          </a>
+          <a href="{% url 'logout' %}" class="nav-btn" style="color: var(--text-muted);">
+            <span>Logout ({{ user.first_name|default:user.username }})</span>
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}" class="nav-btn">
+            <span>👤</span>
+            <span>Log In</span>
+          </a>
+          <a href="{% url 'signup' %}" class="nav-btn" style="background: var(--bg-subtle);">
+            <span>Register</span>
+          </a>
+        {% endif %}
+
+        <!-- Cart Button -->
+        <a href="{% url 'cart_detail' %}" class="nav-btn cart-btn">
+          <span>🛒</span>
+          <span>Cart</span>
+          <span class="cart-badge">{{ cart_count }}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Category Nav Strip -->
+    <nav class="category-nav-strip">
+      <div class="category-nav-inner">
+        <a href="{% url 'product_list' %}" class="category-pill {% if not request.GET.category %}active{% endif %}">
+          <span>✨</span>
+          <span>All Products</span>
+        </a>
+        {% for cat in nav_categories %}
+          <a href="{% url 'product_list' %}?category={{ cat.slug }}" class="category-pill {% if request.GET.category == cat.slug %}active{% endif %}">
+            <span>{{ cat.icon }}</span>
+            <span>{{ cat.name }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </nav>
+  </header>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div style="max-width: 1280px; margin: 16px auto 0 auto; padding: 0 20px;">
+      {% for message in messages %}
+        <div style="padding: 12px 18px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; margin-bottom: 10px; background: {% if message.tags == 'success' %}#DCFCE7; color: #166534; border: 1px solid #BBF7D0;{% elif message.tags == 'warning' %}#FEF3C7; color: #92400E; border: 1px solid #FDE68A;{% else %}#EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE;{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content -->
+  <main class="page-container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <div class="brand-logo" style="margin-bottom: 6px;">
+          <div class="brand-icon">🛍️</div>
+          <span>NovaCart</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); max-width: 360px;">
+          Built for CodeAlpha Web Development Internship Task 1: Simple E-commerce Store.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 30px; font-size: 13.5px; color: var(--text-muted);">
+        <div>🔒 256-Bit SSL Encrypted</div>
+        <div>⚡ Express Shipping</div>
+        <div>🛡️ 7-Day Easy Returns</div>
+      </div>
+
+      <div style="font-size: 12px; color: var(--text-light);">
+        &copy; 2026 NovaCart. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

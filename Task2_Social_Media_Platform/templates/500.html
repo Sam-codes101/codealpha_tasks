@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}500 — Glitch in the Matrix | VIBEUP{% endblock %}
+
+{% block content %}
+<div style="max-width: 540px; margin: 60px auto; text-align: center;">
+  <div class="empty-state" style="padding: 50px 30px;">
+    <div style="font-size: 64px; margin-bottom: 16px;">⚡</div>
+    <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 800; margin-bottom: 10px;">
+      500: Server hit a mental block
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Our servers are running on 2 hours of sleep and questionable energy drinks. Something glitched on our end, but our engineers are on it!
+    </p>
+    <a href="{% url 'home' %}" class="btn-pill-primary">
+      Reload Timeline 🔄
+    </a>
+  </div>
+</div>
+{% endblock %}

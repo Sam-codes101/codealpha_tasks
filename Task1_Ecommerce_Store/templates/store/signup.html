@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account — NovaCart{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 30px auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px; box-shadow: var(--shadow-sm);">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <div class="brand-icon" style="margin: 0 auto 12px auto;">🛍️</div>
+    <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 6px;">Create NovaCart Account</h1>
+    <p style="font-size: 13.5px; color: var(--text-muted);">Join to track orders, save shipping info, and get member discounts.</p>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">First Name</label>
+        {{ form.first_name }}
+      </div>
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Last Name</label>
+        {{ form.last_name }}
+      </div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Username *</label>
+      {{ form.username }}
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Email Address *</label>
+      {{ form.email }}
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Password *</label>
+      {{ form.password }}
+    </div>
+
+    <div style="margin-bottom: 22px;">
+      <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Confirm Password *</label>
+      {{ form.confirm_password }}
+      {% if form.confirm_password.errors %}
+        <div style="color: var(--danger); font-size: 12px; margin-top: 4px; font-weight: 600;">{{ form.confirm_password.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn-primary" style="width: 100%; padding: 13px;">
+      Create Account ✨
+    </button>
+  </form>
+
+  <div style="text-align: center; margin-top: 24px; font-size: 13.5px; color: var(--text-muted);">
+    Already registered? <a href="{% url 'login' %}" style="color: var(--primary); font-weight: 700;">Log in here</a>
+  </div>
+</div>
+{% endblock %}

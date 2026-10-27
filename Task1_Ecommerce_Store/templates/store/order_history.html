@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Orders — NovaCart{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 8px;">Order History 📦</h1>
+  <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">View and track all your previous purchases on NovaCart.</p>
+
+  {% if orders %}
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      {% for order in orders %}
+        <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);">
+          <!-- Order Header -->
+          <div style="background: var(--bg-subtle); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 13.5px;">
+            <div>
+              <span style="color: var(--text-muted);">Order Placed: </span>
+              <strong>{{ order.created_at|date:'M d, Y' }}</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Total: </span>
+              <strong style="color: var(--primary);">₹{{ order.total_price }}</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Ship To: </span>
+              <strong>{{ order.full_name }}</strong>
+            </div>
+            <div>
+              <span style="font-family: monospace; font-weight: 700;">#{{ order.order_number }}</span>
+            </div>
+          </div>
+
+          <!-- Order Content -->
+          <div style="padding: 20px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-full); background: #EFF6FF; color: var(--primary); text-transform: uppercase;">
+                  {{ order.get_status_display }}
+                </span>
+                <span style="font-size: 13px; color: var(--text-muted);">via {{ order.payment_method }}</span>
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              {% for item in order.items.all %}
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding-bottom: 8px; border-bottom: 1px dashed var(--border);">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-weight: 700; color: var(--text-muted);">{{ item.quantity }}x</span>
+                    {% if item.product %}
+                      <a href="{% url 'product_detail' item.product.slug %}" style="font-weight: 600; color: var(--text-main);">
+                        {{ item.product_name }}
+                      </a>
+                    {% else %}
+                      <span>{{ item.product_name }}</span>
+                    {% endif %}
+                  </div>
+                  <strong>₹{{ item.total_item_price }}</strong>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+      <div style="font-size: 48px; margin-bottom: 12px;">📦</div>
+      <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">No orders found</h3>
+      <p style="color: var(--text-muted); margin-bottom: 20px;">You haven't placed any orders yet.</p>
+      <a href="{% url 'product_list' %}" class="btn-primary">Explore Products</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

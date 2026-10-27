@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ list_type }} of @{{ target_user.username }} — VIBEUP{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'profile' target_user.username %}" class="btn-pill-outline" style="font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+      ← Back to @{{ target_user.username }}'s profile
+    </a>
+  </div>
+
+  <div class="form-card">
+    <h1 style="font-family: var(--font-display); font-size: 22px; font-weight: 800; margin-bottom: 16px;">
+      {{ list_type }} ({{ relationships|length }})
+    </h1>
+
+    {% if relationships %}
+      {% for rel in relationships %}
+        {% with person=rel.follower|default:rel.following %}
+          {% if is_followers %}
+            {% with person=rel.follower %}
+              <div class="suggested-user-row" style="padding: 12px 0;">
+                <a href="{% url 'profile' person.username %}" class="suggested-user-info">
+                  <img src="{{ person.profile.get_avatar_url }}" alt="{{ person.username }}" class="user-avatar-sm">
+                  <div>
+                    <div class="user-meta-name">{{ person.profile.get_display_name }}</div>
+                    <div class="user-meta-handle">@{{ person.username }}</div>
+                    {% if person.profile.campus %}
+                      <div style="font-size: 11px; color: var(--brand-purple-soft);">{{ person.profile.campus }}</div>
+                    {% endif %}
+                  </div>
+                </a>
+                <a href="{% url 'profile' person.username %}" class="btn-pill-outline" style="font-size: 12px; padding: 5px 14px;">
+                  View Vibe
+                </a>
+              </div>
+            {% endwith %}
+          {% else %}
+            {% with person=rel.following %}
+              <div class="suggested-user-row" style="padding: 12px 0;">
+                <a href="{% url 'profile' person.username %}" class="suggested-user-info">
+                  <img src="{{ person.profile.get_avatar_url }}" alt="{{ person.username }}" class="user-avatar-sm">
+                  <div>
+                    <div class="user-meta-name">{{ person.profile.get_display_name }}</div>
+                    <div class="user-meta-handle">@{{ person.username }}</div>
+                    {% if person.profile.campus %}
+                      <div style="font-size: 11px; color: var(--brand-purple-soft);">{{ person.profile.campus }}</div>
+                    {% endif %}
+                  </div>
+                </a>
+                <a href="{% url 'profile' person.username %}" class="btn-pill-outline" style="font-size: 12px; padding: 5px 14px;">
+                  View Vibe
+                </a>
+              </div>
+            {% endwith %}
+          {% endif %}
+        {% endwith %}
+      {% endfor %}
+    {% else %}
+      <div class="empty-state" style="padding: 30px;">
+        <p class="empty-state-desc">Nobody in this list yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

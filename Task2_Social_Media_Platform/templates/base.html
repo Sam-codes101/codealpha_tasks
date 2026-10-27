@@ -1,0 +1,220 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ user_theme|default:'dark' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}VIBEUP — Your People. Your Chaos.{% endblock %}</title>
+  
+  <!-- Pre-apply theme from localStorage to eliminate FOUC -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('vibeup_theme') || '{{ user_theme|default:"dark" }}';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
+  <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  <!-- Mobile Top Bar -->
+  <header class="mobile-top-bar">
+    <a href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}" class="brand-wrapper" style="margin: 0; padding: 0;">
+      <div class="brand-logo-icon">V</div>
+      <span class="brand-title" style="font-size: 20px;">VIBEUP</span>
+    </a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button class="theme-toggle-btn" aria-label="Toggle Theme" style="font-size: 18px; padding: 6px;">
+        <span class="theme-icon">🌙</span>
+      </button>
+      {% if user.is_authenticated %}
+        <a href="{% url 'profile' user.username %}">
+          <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}" class="user-avatar-sm" style="width: 34px; height: 34px;">
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn-pill-primary" style="padding: 6px 14px; font-size: 13px;">Log In</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="app-container">
+    {% if not hide_sidebar %}
+    <!-- Left Navigation Sidebar (Desktop) -->
+    <aside class="sidebar">
+      <div class="brand-wrapper">
+        <a href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'landing' %}{% endif %}" style="display: flex; align-items: center; gap: 10px;">
+          <div class="brand-logo-icon">V</div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="brand-title">VIBEUP</span>
+              <span class="brand-badge">Beta</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <nav class="nav-menu">
+        {% if user.is_authenticated %}
+          <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <a href="{% url 'home' %}">
+              <span class="nav-icon">⚡</span>
+              <span>Home Feed</span>
+            </a>
+          </li>
+        {% else %}
+          <li class="nav-item {% if request.resolver_match.url_name == 'landing' %}active{% endif %}">
+            <a href="{% url 'landing' %}">
+              <span class="nav-icon">✨</span>
+              <span>Welcome</span>
+            </a>
+          </li>
+        {% endif %}
+
+        <li class="nav-item {% if request.resolver_match.url_name == 'explore' %}active{% endif %}">
+          <a href="{% url 'explore' %}">
+            <span class="nav-icon">🔥</span>
+            <span>Explore</span>
+          </a>
+        </li>
+
+        {% if user.is_authenticated %}
+          <li class="nav-item {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+            <a href="{% url 'notifications' %}">
+              <span class="nav-icon">🔔</span>
+              <span>Notifications</span>
+              {% if unread_notifications_count > 0 %}
+                <span class="nav-badge">{{ unread_notifications_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+
+          <li class="nav-item {% if request.resolver_match.url_name == 'profile' and request.resolver_match.kwargs.username == user.username %}active{% endif %}">
+            <a href="{% url 'profile' user.username %}">
+              <span class="nav-icon">👤</span>
+              <span>My Profile</span>
+            </a>
+          </li>
+
+          <li class="nav-item {% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+            <a href="{% url 'settings' %}">
+              <span class="nav-icon">⚙️</span>
+              <span>Settings</span>
+            </a>
+          </li>
+        {% endif %}
+
+        <!-- Theme Toggle -->
+        <li class="nav-item">
+          <button type="button" class="theme-toggle-btn" aria-label="Toggle Light and Dark Theme">
+            <span class="nav-icon theme-icon">🌙</span>
+            <span class="theme-label">Switch Theme</span>
+          </button>
+        </li>
+      </nav>
+
+      {% if user.is_authenticated %}
+        <!-- Create Post Button -->
+        <a href="{% url 'create_post' %}" class="sidebar-cta-btn">
+          <span>✨</span>
+          <span>Drop a Vibe</span>
+        </a>
+
+        <!-- User mini-pill at bottom of sidebar -->
+        <div class="sidebar-user-card">
+          <a href="{% url 'profile' user.username %}" style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+            <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}" class="user-avatar-sm">
+            <div class="user-meta-sm">
+              <div class="user-meta-name">{{ user.profile.get_display_name }}</div>
+              <div class="user-meta-handle">@{{ user.username }}</div>
+            </div>
+          </a>
+          <a href="{% url 'logout' %}" title="Log out" style="color: var(--text-muted); font-size: 16px; padding: 4px;">
+            🚪
+          </a>
+        </div>
+      {% else %}
+        <div style="padding: 16px 8px; display: flex; flex-direction: column; gap: 10px;">
+          <a href="{% url 'login' %}" class="btn-pill-outline" style="text-align: center;">Log In</a>
+          <a href="{% url 'signup' %}" class="btn-pill-primary" style="text-align: center;">Join VIBEUP</a>
+        </div>
+      {% endif %}
+    </aside>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    {% block right_rail %}
+    {% endblock %}
+  </div>
+
+  <!-- Mobile Sticky Bottom Navigation -->
+  {% if user.is_authenticated %}
+  <nav class="mobile-bottom-nav">
+    <a href="{% url 'home' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+      <span style="font-size: 20px;">⚡</span>
+      <span>Home</span>
+    </a>
+    <a href="{% url 'explore' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'explore' %}active{% endif %}">
+      <span style="font-size: 20px;">🔥</span>
+      <span>Explore</span>
+    </a>
+    <a href="{% url 'create_post' %}" class="mobile-nav-link" style="color: var(--brand-lime);">
+      <span style="font-size: 26px; line-height: 1;">＋</span>
+      <span>Post</span>
+    </a>
+    <a href="{% url 'notifications' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+      <span style="font-size: 20px;">🔔</span>
+      <span>Alerts</span>
+      {% if unread_notifications_count > 0 %}
+        <span class="mobile-badge">{{ unread_notifications_count }}</span>
+      {% endif %}
+    </a>
+    <a href="{% url 'profile' user.username %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'profile' and request.resolver_match.kwargs.username == user.username %}active{% endif %}">
+      <span style="font-size: 20px;">👤</span>
+      <span>Profile</span>
+    </a>
+  </nav>
+  {% endif %}
+
+  <!-- Toast Notification System -->
+  <div class="toast-container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags|default:'info' }}">
+          <span>{% if message.tags == 'success' %}✨{% else %}💬{% endif %}</span>
+          <span>{{ message }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Shared Reusable Modal for Followers / Following Lists -->
+  <div id="usersModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="usersModalTitle" class="modal-title">Campus Crew</h3>
+        <button class="modal-close-btn" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body" id="usersModalBody">
+        <!-- Injected dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JavaScript -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

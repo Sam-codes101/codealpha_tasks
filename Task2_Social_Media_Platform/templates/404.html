@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 — The Vibe Has Left The Chat | VIBEUP{% endblock %}
+
+{% block content %}
+<div style="max-width: 540px; margin: 60px auto; text-align: center;">
+  <div class="empty-state" style="padding: 50px 30px;">
+    <div style="font-size: 64px; margin-bottom: 16px;">💀</div>
+    <h1 style="font-family: var(--font-display); font-size: 32px; font-weight: 800; margin-bottom: 10px;">
+      404: The vibe has left the chat
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      We searched every corner of campus and the digital void, but this page doesn't exist. Maybe it was deleted, or maybe it was just a fever dream.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="{% url 'home' %}" class="btn-pill-primary">
+        Back to Home Feed ⚡
+      </a>
+      <a href="{% url 'explore' %}" class="btn-pill-outline">
+        Explore Public Vibes 🔥
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

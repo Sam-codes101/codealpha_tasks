@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout — NovaCart{% endblock %}
+
+{% block content %}
+<h1 style="font-size: 26px; font-weight: 800; margin-bottom: 24px;">Secure Checkout 💳</h1>
+
+<form method="POST">
+  {% csrf_token %}
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+    <!-- Shipping Address & Payment Form -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <!-- Shipping Information Card -->
+      <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm);">
+        <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+          <span>📍</span>
+          <span>Shipping Address</span>
+        </h2>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Full Name *</label>
+            {{ form.full_name }}
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Email Address *</label>
+              {{ form.email }}
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Phone Number *</label>
+              {{ form.phone }}
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">Street Address *</label>
+            {{ form.address }}
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">City *</label>
+              {{ form.city }}
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">State *</label>
+              {{ form.state }}
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;">PIN Code *</label>
+              {{ form.postal_code }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Method Selection -->
+      <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm);">
+        <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+          <span>💳</span>
+          <span>Payment Method</span>
+        </h2>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          {% for radio in form.payment_method %}
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px 18px; border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; background: var(--bg-page);">
+              {{ radio.tag }}
+              <span style="font-size: 14.5px; font-weight: 600;">{{ radio.choice_label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Review Summary -->
+    <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); position: sticky; top: 100px;">
+      <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 16px;">Items in Order ({{ cart_count }})</h2>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; max-height: 240px; overflow-y: auto;">
+        {% for item in cart %}
+          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13.5px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-weight: 700; color: var(--text-muted);">{{ item.quantity }}x</span>
+              <span style="max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">{{ item.product.name }}</span>
+            </div>
+            <span style="font-weight: 700;">₹{{ item.total_price }}</span>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 12px; font-size: 14px; color: var(--text-muted); display: flex; justify-content: space-between;">
+        <span>Subtotal</span>
+        <span style="font-weight: 700; color: var(--text-main);">₹{{ cart.get_subtotal }}</span>
+      </div>
+
+      <div style="margin-bottom: 16px; font-size: 14px; color: var(--text-muted); display: flex; justify-content: space-between;">
+        <span>Delivery Fee</span>
+        <span>
+          {% if cart.get_shipping_fee == 0 %}
+            <span style="color: var(--success); font-weight: 700;">FREE</span>
+          {% else %}
+            <span style="font-weight: 700; color: var(--text-main);">₹{{ cart.get_shipping_fee }}</span>
+          {% endif %}
+        </span>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 16px; margin-bottom: 20px; font-size: 18px; font-weight: 800; display: flex; justify-content: space-between;">
+        <span>Order Total</span>
+        <span style="color: var(--primary);">₹{{ cart.get_total }}</span>
+      </div>
+
+      <button type="submit" class="btn-primary" style="width: 100%; padding: 15px; font-size: 15px;">
+        Place Order Now 🚀
+      </button>
+
+      <div style="margin-top: 16px; font-size: 12px; color: var(--text-muted); text-align: center;">
+        By placing your order, you agree to NovaCart's Terms of Service and Privacy Policy.
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

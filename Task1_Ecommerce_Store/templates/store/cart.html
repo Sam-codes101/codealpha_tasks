@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart — NovaCart{% endblock %}
+
+{% block content %}
+<h1 style="font-size: 26px; font-weight: 800; margin-bottom: 24px;">Your Shopping Cart 🛒</h1>
+
+{% if cart %}
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+    <!-- Items Table -->
+    <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm);">
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart %}
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 14px;">
+                  <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                  <div>
+                    <a href="{% url 'product_detail' item.product.slug %}" style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 4px;">
+                      {{ item.product.name }}
+                    </a>
+                    <span style="font-size: 12px; color: var(--text-muted);">{{ item.product.category.name }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td style="font-weight: 700; font-size: 14px;">₹{{ item.price }}</td>
+
+              <td>
+                <form method="POST" action="{% url 'cart_update' item.product.id %}" style="display: flex; align-items: center; gap: 6px;">
+                  {% csrf_token %}
+                  <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" style="width: 55px; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center; font-weight: 600;">
+                  <button type="submit" title="Update quantity" style="font-size: 13px; color: var(--primary); font-weight: 700; padding: 4px 8px; border-radius: var(--radius-sm); background: var(--primary-light);">
+                    ↻
+                  </button>
+                </form>
+              </td>
+
+              <td style="font-weight: 800; font-size: 15px; color: var(--primary);">₹{{ item.total_price }}</td>
+
+              <td>
+                <form method="POST" action="{% url 'cart_remove' item.product.id %}">
+                  {% csrf_token %}
+                  <button type="submit" style="color: var(--danger); font-size: 18px; padding: 4px;" title="Remove item">
+                    🗑️
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="padding: 16px 20px; background: var(--bg-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <a href="{% url 'product_list' %}" style="font-size: 14px; font-weight: 600; color: var(--primary);">← Continue Shopping</a>
+      </div>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+      <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 20px;">Order Summary</h2>
+
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">
+        <span>Subtotal</span>
+        <span style="font-weight: 700; color: var(--text-main);">₹{{ cart.get_subtotal }}</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">
+        <span>Delivery Fee</span>
+        <span>
+          {% if cart.get_shipping_fee == 0 %}
+            <span style="color: var(--success); font-weight: 700;">FREE</span>
+          {% else %}
+            <span style="font-weight: 700; color: var(--text-main);">₹{{ cart.get_shipping_fee }}</span>
+          {% endif %}
+        </span>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); margin: 16px 0; padding-top: 16px; display: flex; justify-content: space-between; font-size: 18px; font-weight: 800;">
+        <span>Total Amount</span>
+        <span style="color: var(--primary);">₹{{ cart.get_total }}</span>
+      </div>
+
+      <a href="{% url 'checkout' %}" class="btn-primary" style="width: 100%; padding: 14px; font-size: 15px; margin-top: 10px;">
+        Proceed to Checkout →
+      </a>
+
+      <div style="margin-top: 20px; text-align: center; font-size: 12.5px; color: var(--text-muted);">
+        🔒 Safe & Secure 256-Bit SSL Checkout
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  <!-- Empty Cart State -->
+  <div style="text-align: center; padding: 80px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+    <div style="font-size: 56px; margin-bottom: 14px;">🛒</div>
+    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 8px;">Your cart is feeling lonely!</h2>
+    <p style="color: var(--text-muted); max-width: 420px; margin: 0 auto 24px auto;">
+      Looks like you haven't added anything to your cart yet. Explore our curated collections to find your next favorite tech or style piece.
+    </p>
+    <a href="{% url 'product_list' %}" class="btn-primary" style="padding: 14px 28px;">
+      Start Shopping ✨
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

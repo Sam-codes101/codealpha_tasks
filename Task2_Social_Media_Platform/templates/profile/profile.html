@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile.get_display_name }} (@{{ target_user.username }}) — VIBEUP{% endblock %}
+
+{% block content %}
+<div class="profile-hero">
+  <!-- Gradient Banner -->
+  <div class="profile-banner"></div>
+
+  <div class="profile-body">
+    <!-- Avatar and Action Buttons Row -->
+    <div class="profile-avatar-row">
+      <img src="{{ profile.get_avatar_url }}" alt="{{ target_user.username }}" class="profile-avatar-lg">
+      
+      <div class="profile-action-btns">
+        {% if is_self %}
+          <a href="{% url 'settings' %}" class="btn-pill-outline">
+            ⚙️ Edit Vibe
+          </a>
+        {% else %}
+          {% if user.is_authenticated %}
+            <button type="button" class="btn-follow btn-pill-primary {% if is_following %}following{% endif %}" data-username="{{ target_user.username }}">
+              <span class="follow-text">{% if is_following %}Following{% else %}Follow ✨{% endif %}</span>
+            </button>
+          {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn-pill-primary">
+              Follow ✨
+            </a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- User Names & Badges -->
+    <div class="profile-names">
+      <h1 class="profile-display-name">
+        <span>{{ profile.get_display_name }}</span>
+        {% if profile.pronouns %}
+          <span style="font-size: 13px; font-weight: 500; color: var(--text-muted);">({{ profile.pronouns }})</span>
+        {% endif %}
+      </h1>
+      <div class="profile-username">@{{ target_user.username }}</div>
+    </div>
+
+    <!-- Campus and Vibe Badges -->
+    <div class="profile-badges-row">
+      {% if profile.campus %}
+        <span class="badge-tag campus-tag">
+          <span>🎓</span>
+          <span>{{ profile.campus }}</span>
+        </span>
+      {% endif %}
+      {% if profile.vibe_tag %}
+        <span class="badge-tag" style="background: rgba(212, 255, 50, 0.12); color: var(--brand-lime);">
+          <span>⚡</span>
+          <span>{{ profile.vibe_tag }}</span>
+        </span>
+      {% endif %}
+      <span class="badge-tag">
+        <span>🗓️</span>
+        <span>Joined {{ target_user.date_joined|date:'M Y' }}</span>
+      </span>
+      {% if profile.website %}
+        <a href="{{ profile.website }}" target="_blank" rel="noopener noreferrer" class="badge-tag" style="color: var(--brand-purple-soft);">
+          <span>🔗</span>
+          <span>{{ profile.website }}</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Bio -->
+    {% if profile.bio %}
+      <p class="profile-bio">{{ profile.bio|linebreaksbr }}</p>
+    {% else %}
+      <p class="profile-bio" style="color: var(--text-muted); font-style: italic;">Living life offline or too mysterious to write a bio.</p>
+    {% endif %}
+
+    <!-- Interests Pills -->
+    {% if profile.get_interests_list %}
+      <div style="margin-bottom: 18px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+          Interests & Hyperfixations
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          {% for interest in profile.get_interests_list %}
+            <a href="{% url 'explore' %}?q={{ interest|urlencode }}" class="badge-tag" style="cursor: pointer;">
+              #{{ interest }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Stats Row (Clickable Followers & Following modals!) -->
+    <div class="profile-stats-row">
+      <div class="profile-stat-item">
+        <span class="stat-number">{{ profile.posts_count }}</span>
+        <span class="stat-label">Vibes</span>
+      </div>
+
+      <div class="profile-stat-item" data-modal-target="usersModal" data-fetch-url="{% url 'user_followers' target_user.username %}" title="View followers">
+        <span class="stat-number followers-count-num">{{ profile.followers_count }}</span>
+        <span class="stat-label">Followers</span>
+      </div>
+
+      <div class="profile-stat-item" data-modal-target="usersModal" data-fetch-url="{% url 'user_following' target_user.username %}" title="View following">
+        <span class="stat-number">{{ profile.following_count }}</span>
+        <span class="stat-label">Following</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Navigation Tabs (Posts, Liked, Media) -->
+<div class="feed-tabs" style="margin-bottom: 24px;">
+  <a href="{% url 'profile' target_user.username %}?tab=posts" class="feed-tab {% if tab == 'posts' %}active{% endif %}">
+    <span>Posts</span>
+  </a>
+  <a href="{% url 'profile' target_user.username %}?tab=media" class="feed-tab {% if tab == 'media' %}active{% endif %}">
+    <span>Photos & Media</span>
+  </a>
+  <a href="{% url 'profile' target_user.username %}?tab=likes" class="feed-tab {% if tab == 'likes' %}active{% endif %}">
+    <span>Liked Vibes</span>
+  </a>
+</div>
+
+<!-- Posts Stream -->
+<div class="posts-stream">
+  {% if posts %}
+    {% for post in posts %}
+      {% include 'includes/post_card.html' with post=post %}
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if posts.has_other_pages %}
+      <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 30px 0;">
+        {% if posts.has_previous %}
+          <a href="?tab={{ tab }}&page={{ posts.previous_page_number }}" class="btn-pill-outline" style="font-size: 13px;">
+            ← Newer
+          </a>
+        {% endif %}
+        
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+          Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+        </span>
+
+        {% if posts.has_next %}
+          <a href="?tab={{ tab }}&page={{ posts.next_page_number }}" class="btn-pill-outline" style="font-size: 13px;">
+            Older →
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">🌱</div>
+      <h2 class="empty-state-title">No vibes to display here</h2>
+      <p class="empty-state-desc">
+        {% if is_self %}
+          You haven't posted anything under this section yet.
+        {% else %}
+          @{{ target_user.username }} hasn't dropped any vibes in this tab.
+        {% endif %}
+      </p>
+      {% if is_self %}
+        <a href="{% url 'create_post' %}" class="btn-pill-primary">
+          Drop a Post Now ✨
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

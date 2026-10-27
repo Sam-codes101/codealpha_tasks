@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Store Hero Banner (only on all products view) -->
+{% if not request.GET.category and not request.GET.q %}
+<section class="store-hero">
+  <div class="hero-text">
+    <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: var(--radius-full); font-size: 12px; font-weight: 700; text-transform: uppercase;">New Season Drop</span>
+    <h1 style="margin-top: 12px;">Curated Lifestyle & Campus Essentials.</h1>
+    <p>Discover noise-cancelling audio, custom mechanical keyboards, street sneakers, and everyday carry gear.</p>
+    <a href="#catalog" class="btn-primary" style="background: #fff; color: var(--primary);">Explore Collection ↓</a>
+  </div>
+  <div style="font-size: 90px; display: none; @media(min-width: 768px){display: block;}">
+    🎧
+  </div>
+</section>
+{% endif %}
+
+<!-- Filters & Sorting Header -->
+<div id="catalog" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
+  <div>
+    <h2 style="font-size: 20px; font-weight: 800;">
+      {% if selected_category %}
+        {{ selected_category.name }}
+      {% elif query %}
+        Search results for "{{ query }}"
+      {% else %}
+        All Trending Products
+      {% endif %}
+    </h2>
+    <span style="font-size: 13px; color: var(--text-muted);">Showing {{ products|length }} of {{ total_products }} items</span>
+  </div>
+
+  <!-- Sort By -->
+  <form method="GET" style="display: flex; align-items: center; gap: 8px;">
+    {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
+    {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+    <label for="sort" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">Sort by:</label>
+    <select name="sort" id="sort" class="form-input" style="padding: 6px 12px; font-size: 13px; width: auto;" onchange="this.form.submit()">
+      <option value="newest" {% if sort == 'newest' %}selected{% endif %}>✨ Newest Arrivals</option>
+      <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>💰 Price: Low to High</option>
+      <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>💎 Price: High to Low</option>
+      <option value="rating" {% if sort == 'rating' %}selected{% endif %}>⭐ Customer Rating</option>
+    </select>
+  </form>
+</div>
+
+<!-- Product Grid -->
+{% if products %}
+  <div class="products-grid">
+    {% for product in products %}
+      <article class="product-card">
+        <div class="product-thumb-wrap">
+          {% if product.discount_percent > 0 %}
+            <span class="badge-discount">{{ product.discount_percent }}% OFF</span>
+          {% endif %}
+          <a href="{% url 'product_detail' product.slug %}">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy">
+          </a>
+        </div>
+
+        <div class="product-body">
+          <span class="product-category-name">{{ product.category.name }}</span>
+          <h3 class="product-title">
+            <a href="{% url 'product_detail' product.slug %}">{{ product.name }}</a>
+          </h3>
+
+          <div class="product-rating">
+            <span>★</span>
+            <span>{{ product.rating }}</span>
+            <span style="color: var(--text-muted); font-weight: 500;">({{ product.reviews_count }})</span>
+          </div>
+
+          <div class="product-price-row">
+            <span class="price-current">₹{{ product.current_price }}</span>
+            {% if product.discount_price %}
+              <span class="price-original">₹{{ product.price }}</span>
+            {% endif %}
+          </div>
+
+          <form method="POST" action="{% url 'cart_add' product.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn-add-cart">
+              <span>🛒</span>
+              <span>Add to Cart</span>
+            </button>
+          </form>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if products.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 40px;">
+      {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" class="btn-primary" style="background: #fff; color: var(--text-main); border: 1px solid var(--border);">← Previous</a>
+      {% endif %}
+      <span style="align-self: center; font-size: 13.5px; font-weight: 600; color: var(--text-muted);">
+        Page {{ products.number }} of {{ products.paginator.num_pages }}
+      </span>
+      {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if query %}&q={{ query }}{% endif %}" class="btn-primary" style="background: #fff; color: var(--text-main); border: 1px solid var(--border);">Next →</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+{% else %}
+  <div style="text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+    <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
+    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">No products found</h3>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Try searching for different keywords or browse all categories.</p>
+    <a href="{% url 'product_list' %}" class="btn-primary">View All Products</a>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home Feed — VIBEUP{% endblock %}
+
+{% block content %}
+<div class="feed-header">
+  <h1 class="feed-title">Home Feed</h1>
+  <p class="feed-subtitle">Where the campus stories, memes, and late night chaos live.</p>
+</div>
+
+<!-- Feed Navigation Tabs -->
+<div class="feed-tabs">
+  <a href="{% url 'home' %}?feed=following" class="feed-tab {% if tab == 'following' %}active{% endif %}">
+    <span>Following</span>
+    <span class="badge-tag" style="padding: 1px 7px; font-size: 11px;">{{ following_count }}</span>
+  </a>
+  <a href="{% url 'home' %}?feed=all" class="feed-tab {% if tab == 'all' %}active{% endif %}">
+    <span>For You (All Campus)</span>
+    <span>⚡</span>
+  </a>
+</div>
+
+<!-- Compact "What's the vibe?" Composer -->
+<div class="composer-card">
+  <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="composer-top">
+      <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}" class="composer-avatar">
+      <div class="composer-input-wrap">
+        {{ form.content }}
+      </div>
+    </div>
+
+    <!-- Image Preview Box -->
+    <div class="image-preview-box">
+      <img src="" alt="Selected image preview">
+      <button type="button" class="remove-preview-btn" title="Remove image">✕</button>
+    </div>
+
+    <div class="composer-controls">
+      <div class="composer-actions">
+        <!-- Photo upload label -->
+        <label for="{{ form.image.id_for_label }}" class="composer-file-label" title="Attach an image">
+          <span>📷</span>
+          <span>Attach Pic</span>
+        </label>
+        {{ form.image }}
+
+        <!-- Mood dropdown -->
+        {{ form.mood }}
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span class="char-counter">0 / 1000</span>
+        <button type="submit" class="btn-publish">
+          Post Vibe ✨
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Posts Stream -->
+<div class="posts-stream">
+  {% if posts %}
+    {% for post in posts %}
+      {% include 'includes/post_card.html' with post=post %}
+    {% endfor %}
+
+    <!-- Pagination Controls -->
+    {% if posts.has_other_pages %}
+      <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 30px 0;">
+        {% if posts.has_previous %}
+          <a href="?feed={{ tab }}&page={{ posts.previous_page_number }}" class="btn-pill-outline" style="font-size: 13px;">
+            ← Newer Vibes
+          </a>
+        {% endif %}
+        
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+          Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+        </span>
+
+        {% if posts.has_next %}
+          <a href="?feed={{ tab }}&page={{ posts.next_page_number }}" class="btn-pill-outline" style="font-size: 13px;">
+            Older Vibes →
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    <!-- Playful Gen-Z Empty State -->
+    <div class="empty-state">
+      <div class="empty-state-icon">💀</div>
+      <h2 class="empty-state-title">It's giving quiet timeline.</h2>
+      <p class="empty-state-desc">
+        {% if tab == 'following' %}
+          You aren't following anyone with recent posts yet, or they're sleeping off their 8am lecture.
+          Check out the <strong>For You</strong> feed or follow some creators below!
+        {% else %}
+          The universe is oddly quiet right now. Drop the very first vibe and set the tone!
+        {% endif %}
+      </p>
+      {% if tab == 'following' %}
+        <a href="{% url 'home' %}?feed=all" class="btn-pill-primary">
+          Explore All Campus Vibes ⚡
+        </a>
+      {% else %}
+        <button type="button" onclick="document.querySelector('.post-textarea').focus()" class="btn-pill-primary">
+          Drop the First Post ✨
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block right_rail %}
+<!-- Right Contextual Rail for Home Feed -->
+<aside class="right-rail">
+  <!-- Trending Hashtags Widget -->
+  {% if trending_tags %}
+  <div class="widget-card">
+    <div class="widget-header">
+      <h3 class="widget-title">
+        <span>🔥</span>
+        <span>Trending on Campus</span>
+      </h3>
+    </div>
+    <div class="hashtag-list">
+      {% for item in trending_tags %}
+        <a href="{% url 'explore' %}?tag={{ item.tag }}" class="hashtag-pill">
+          <span>#{{ item.tag }}</span>
+          <span class="hashtag-count">{{ item.count }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- People You Might Vibe With Widget -->
+  {% if suggested_users %}
+  <div class="widget-card">
+    <div class="widget-header">
+      <h3 class="widget-title">
+        <span>✨</span>
+        <span>People You Might Vibe With</span>
+      </h3>
+    </div>
+    <div>
+      {% for u in suggested_users %}
+        <div class="suggested-user-row">
+          <a href="{% url 'profile' u.username %}" class="suggested-user-info">
+            <img src="{{ u.profile.get_avatar_url }}" alt="{{ u.username }}" class="user-avatar-sm">
+            <div style="min-width: 0;">
+              <div class="user-meta-name">{{ u.profile.get_display_name }}</div>
+              <div class="user-meta-handle">@{{ u.username }}</div>
+              {% if u.profile.campus %}
+                <div style="font-size: 11px; color: var(--brand-purple-soft);">{{ u.profile.campus }}</div>
+              {% endif %}
+            </div>
+          </a>
+          <button type="button" class="btn-follow btn-follow-sm" data-username="{{ u.username }}">
+            <span class="follow-text">Follow</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Gen-Z Campus Motto / Vibe Card -->
+  <div class="widget-card" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(212, 255, 50, 0.1) 100%);">
+    <div style="font-size: 13px; font-weight: 800; color: var(--brand-lime); text-transform: uppercase; margin-bottom: 6px;">
+      VIBE OF THE DAY
+    </div>
+    <div style="font-size: 14.5px; font-weight: 600; line-height: 1.5; color: var(--text-primary);">
+      "Drink your matcha, close 43 browser tabs, and remember nobody knows what they're doing either." 🍵✨
+    </div>
+  </div>
+</aside>
+{% endblock %}
