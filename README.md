@@ -114,6 +114,6 @@ Both tasks include automated test suites:
 ---
 
 ## 👨‍💻 Intern Details
-- **Intern Name**: Abhishek
-- **Internship Track**: Web Development
+- **Intern Name**: Soumya Chaudhary 
+- **Internship Track**:Full stack developement 
 - **Organization**: CodeAlpha
